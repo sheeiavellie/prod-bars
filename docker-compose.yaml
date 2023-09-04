@@ -1,0 +1,59 @@
+version: "3"
+services:
+  db_bars:
+    container_name: db_bars1
+    image: postgres:15.4-alpine
+    networks:
+      - back
+    restart: always
+    ports:
+      - "5432:5432"
+    expose:
+      - 5432
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - ./init/initpg.sh:/docker-entrypoint-initdb.d/initpg.sh
+
+  api_bars:
+    container_name: api_bars1
+    build:
+      context: ${API_BARS_SRC_DIR}
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    expose:
+      - 3000
+    environment:
+      - PG_STRING=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/api-bars
+      - VIRTUAL_HOST=${API_BARS_DOMAIN}
+      - LETSENCRYPT_HOST=${API_BARS_DOMAIN}
+      - VIRTUAL_PORT=3000
+      - PORT=3000
+      - DB_USER=${POSTGRES_USER}
+      - DB_HOST=${DB_HOST}
+      - DB=${DB}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - BUCKET_NAME=${BUCKET_NAME}
+      - BUCKET_REGION=${BUCKET_REGION}
+      - ACCESS_KEY=${ACCESS_KEY}
+      - SECRET_ACCESS_KEY=${SECRET_ACCESS_KEY}
+      - END_POINT=${END_POINT}
+    links:
+      - db_bars
+    depends_on:
+      - db_bars
+    networks:
+      - back
+      - reverse-proxy
+
+networks:
+  reverse-proxy:
+    external: true
+  back:
+    driver: bridge
+
+volumes:
+  postgres:
