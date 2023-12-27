@@ -1,8 +1,8 @@
 version: "3"
 services:
   db_bars:
-    container_name: db_bars1
-    image: postgres:15.4-alpine
+    container_name: db_bars
+    image: postgres:16.1-alpine
     networks:
       - back
     restart: always
@@ -18,7 +18,7 @@ services:
       - ./init/initpg.sh:/docker-entrypoint-initdb.d/initpg.sh
 
   api_bars:
-    container_name: api_bars1
+    container_name: api_bars
     build:
       context: ${API_BARS_SRC_DIR}
       dockerfile: Dockerfile
